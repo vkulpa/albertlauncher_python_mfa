@@ -7,13 +7,13 @@ import keyring
 import oathtool
 from albert import *
 
-md_iid = "0.5"
+md_iid = "1.0"
 md_version = "0.2"
 md_id = "mfa"
 md_name = "mfa"
 md_description = "MFA plugins which helps use add/remove/copy/past your 2fa codes"
 md_license = "BSD-3"
-md_url = "https://github.com/vkulpa/albertlauncher_python_mfa/tree/py-interface-0.5"
+md_url = "https://github.com/vkulpa/albertlauncher_python_mfa"
 md_lib_dependencies = ["oathtool", "keyring"]
 
 
@@ -55,7 +55,7 @@ class Mfa:
             return -1
 
 
-class Plugin(QueryHandler):
+class Plugin(TriggerQueryHandler):
     icon_add = [os.path.dirname(__file__) + '/icon-add.svg']
     icon_remove = [os.path.dirname(__file__) + '/icon-remove.svg']
     icon_mfa = [os.path.dirname(__file__) + '/icon-mfa.svg']
@@ -75,7 +75,7 @@ class Plugin(QueryHandler):
     def initialize(self):
         self.mfa = Mfa()
 
-    def handleQuery(self, query):
+    def handleTriggerQuery(self, query):
         if not query.isValid:
             return
 
