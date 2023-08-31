@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 #  Copyright (c) 2023 Volodymyr Kulpa
 
-import os
-
 import keyring
 import oathtool
+import os
 from albert import *
 
-md_iid = "1.0"
+md_iid = "2.0"
 md_version = "0.2"
 md_id = "mfa"
 md_name = "mfa"
@@ -55,24 +54,19 @@ class Mfa:
             return -1
 
 
-class Plugin(TriggerQueryHandler):
-    icon_add = [os.path.dirname(__file__) + '/icon-add.svg']
-    icon_remove = [os.path.dirname(__file__) + '/icon-remove.svg']
-    icon_mfa = [os.path.dirname(__file__) + '/icon-mfa.svg']
+class Plugin(PluginInstance, TriggerQueryHandler):
+    icon_add = os.path.dirname(__file__) + '/icon-add.svg'
+    icon_remove = os.path.dirname(__file__) + '/icon-remove.svg'
+    icon_mfa = os.path.dirname(__file__) + '/icon-mfa.svg'
 
-    def id(self):
-        return md_id
-
-    def name(self):
-        return md_name
-
-    def description(self):
-        return md_description
-
-    def synopsis(self):
-        return "account-name | command"
-
-    def initialize(self):
+    def __init__(self):
+        TriggerQueryHandler.__init__(self,
+                                     id=md_id,
+                                     name=md_name,
+                                     description=md_description,
+                                     synopsis='account-name | command',
+                                     defaultTrigger=md_id + " ")
+        PluginInstance.__init__(self, extensions=[self])
         self.mfa = Mfa()
 
     def handleTriggerQuery(self, query):
@@ -89,12 +83,10 @@ class Plugin(TriggerQueryHandler):
                                             u.startswith(tokens[0])])
 
         if len(tokens) == 0 or tokens[0] in ['a', 'ad', 'add']:
-            item = Item(
+            item = StandardItem(
                 id='mfa-add',
-                icon=self.icon_add,
                 text='Add new account to 2fa',
-                subtext='%s add account secret' % query.trigger.strip(),
-                completion='%s add' % query.trigger.strip()
+                subtext='%s add account secret' % query.trigger.strip()
             )
 
             if len(tokens) == 1 and tokens[0] == 'add':
@@ -120,12 +112,10 @@ class Plugin(TriggerQueryHandler):
 
         if len(tokens) == 0 or tokens[0] in ['r', 're', 'rem', 'remo', 'remov',
                                              'remove']:
-            item = Item(
+            item = StandardItem(
                 id='mfa-remove',
-                icon=self.icon_remove,
                 text='Remove an account from 2fs',
-                subtext='%s remove account' % query.trigger.strip(),
-                completion='%s remove' % query.trigger.strip()
+                subtext='%s remove account' % query.trigger.strip()
             )
 
             if len(tokens) == 1 and tokens[0] == 'remove':
@@ -155,11 +145,9 @@ class Plugin(TriggerQueryHandler):
                 continue
 
             maxUsers -= 1
-            query.add(Item(
+            query.add(StandardItem(
                 id='mfa-%s' % user,
-                icon=self.icon_mfa,
                 text='MFA for %s' % user,
                 subtext=otp,
-                completion='%s %s' % (query.trigger.strip(), user),
                 actions=[Action('copy', 'Copy', setClipboardText(otp))]
             ))
